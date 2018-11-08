@@ -1,0 +1,17 @@
+10
+5
+aabbaaabba
+aaabbaaabb
+ababaababa
+aabbaaabba
+aaabbaaabb
+baaabbabab
+aababaabba
+aaabbaaabb
+baaabbaaab
+baaabbaaab
+aabba
+aaabb
+ababa
+aabba
+aaabb
