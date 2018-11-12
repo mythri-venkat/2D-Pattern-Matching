@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
 #include <vector>
+#include <ctime>
+#include <fcntl.h>
+#include <unistd.h>
 using namespace std;
 
 int d = 256;
@@ -132,7 +135,7 @@ void searchKMP(vector<vector<long long>> &r, vector<long long> &pat, int m, int 
     }
 }
 
-void algorithm(string *text, string *pattern, int n, int m)
+void zhu_takaoka_algo(string *text, string *pattern, int n, int m)
 {
 
     int dm = 1;
@@ -149,21 +152,37 @@ void algorithm(string *text, string *pattern, int n, int m)
 
 int main()
 {
-    int m = 5, n = 10;
-    cin >> n >> m;
+    int m = 5, n = 10, t = 0;
+    cin.sync_with_stdio(false);
+    cin >> t;
     // string pat[] = {"aabba", "aaabb", "ababa", "aabba", "aaabb"};
     // string text[] = {"aabbaaabba", "aaabbaaabb", "ababaababa", "aabbaaabba", "aaabbaaabb", "baaabbabab", "aababaabba", "aaabbaaabb", "baaabbaaab", "baaabbaaab"};
-
-    string pat[m], text[n];
-
-    for (int i = 0; i < n; i++)
+    string str="";
+    for (int k = 0; k < t; k++)
     {
-        cin >> text[i];
-    }
-    for (int i = 0; i < m; i++)
-    {
-        cin >> pat[i];
+        
+        cin >> n >> m;
+        string pat[m], text[n];
+        for (int i = 0; i < n; i++)
+        {
+            cin >> text[i];
+        }
+        for (int i = 0; i < m; i++)
+        {
+            cin >> pat[i];
+        }
+        clock_t start=clock();
+        cout << "testcase:"<<k+1<<endl;
+        
+        zhu_takaoka_algo(text, pat, n, m);
+        
+        double duration = 1000*(clock()-start)/(double)CLOCKS_PER_SEC;
+        cout << endl;
+
+        str+=to_string(duration)+"\n";
     }
 
-    algorithm(text, pat, n, m);
+    int fd = open("timing.txt",O_WRONLY | O_CREAT | O_TRUNC, 0644); 
+    write(fd,str.c_str(),str.length());
+
 }

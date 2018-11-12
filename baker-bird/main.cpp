@@ -3,10 +3,13 @@
 #include <vector>
 #include <queue>
 #include <unordered_map>
-
+#include <ctime>
+#include <fcntl.h>
+#include <unistd.h>
 using namespace std;
 
-const int Alph_size = 26;
+const int Alph_size = 10;
+const char Alph_start = '0';
 
 struct trie
 {
@@ -33,7 +36,7 @@ void build(struct trie *root, string word)
     struct trie *pCrawl = root;
     for (int i = 0; i < word.length(); i++)
     {
-        int index = word[i] - 'a';
+        int index = word[i] - Alph_start;
         if (!pCrawl->children[index])
         {
             pCrawl->children[index] = create_node();
@@ -55,6 +58,7 @@ void build_fail(struct trie *root)
         if (root->children[i] != NULL)
         {
             root->children[i]->failnode = fail;
+            
             q.push(root->children[i]);
         }
     }
@@ -70,7 +74,7 @@ void build_fail(struct trie *root)
             bool isroot = true;
             if (child != NULL)
             {
-                if (fail->children[i] != NULL)
+                if (fail->children !=NULL && fail->children[i] != NULL)
                 {
                     child->failnode = fail->children[i];
 
@@ -90,19 +94,23 @@ void build_fail(struct trie *root)
 
                     if (temp->children[i] == NULL && temp->failnode == NULL)
                     {
-                        child->failnode = temp;
+                        child->failnode = root;
                         isroot = true;
                     }
-                    else
+                    else if(temp->children[i] != NULL)
                     {
-                        child->failnode = temp->failnode;
+                        child->failnode = temp->children[i];
                         isroot = false;
+                    }
+                    else{
+                        child->failnode = temp->failnode;
                     }
                     for (int j = 0; j < temp->output.size(); j++)
                     {
                         child->output.push_back(temp->output[j]);
                     }
                 }
+                //cout << (child->failnode == NULL)<<" ";
                 q.push(child);
             }
         }
@@ -119,7 +127,7 @@ void match(struct trie *root, string *str, int n, int m, vector<vector<int>> &r)
         struct trie *cur = root;
         while (i < n)
         {
-            int idx = str[z][i] - 'a';
+            int idx = str[z][i] - Alph_start;
             if (cur->children[idx] != NULL)
             {
                 cur = cur->children[idx];
@@ -214,26 +222,12 @@ void searchKMP(vector<vector<int>> &r, int *pat, int m, int n)
     }
 }
 
-int main()
-{
-    int m = 5, n = 10;
-    cin >> n >> m;
-    //string pat[] = {"aabba", "aaabb", "ababa", "aabba", "aaabb"};
-    //string text[] = {"aabbaaabba", "aaabbaaabb", "ababaababa", "aabbaaabba", "aaabbaaabb", "baaabbabab", "aababaabba", "aaabbaaabb", "baaabbaaab", "baaabbaaab"};
-    struct trie *root = create_node();
-    string pat[m], text[n];
-    vector<vector<int>> r(n, vector<int>(n, 0));
-    for (int i = 0; i < n; i++)
-    {
-        cin >> text[i];
-    }
-    for (int i = 0; i < m; i++)
-    {
-        cin >> pat[i];
-    }
-
+void baker_bird_algo(string * text,string  * pat,int n,int m){
     int x = 1;
     int prepat[m];
+    struct trie *root = create_node();
+    
+    vector<vector<int>> r(n, vector<int>(n, 0));
     for (int i = 0; i < m; i++)
     {
         if (mp.find(pat[i]) == mp.end())
@@ -247,4 +241,41 @@ int main()
     build_fail(root);
     match(root, text, n, m, r);
     searchKMP(r,prepat,m,n);
+}
+
+int main()
+{
+    int m = 5, n = 10, t = 0;
+    cin.sync_with_stdio(false);
+    cin >> t;
+    // string pat[] = {"aabba", "aaabb", "ababa", "aabba", "aaabb"};
+    // string text[] = {"aabbaaabba", "aaabbaaabb", "ababaababa", "aabbaaabba", "aaabbaaabb", "baaabbabab", "aababaabba", "aaabbaaabb", "baaabbaaab", "baaabbaaab"};
+    string str="";
+    for (int k = 0; k < t; k++)
+    {
+        
+        cin >> n >> m;
+        string pat[m], text[n];
+        for (int i = 0; i < n; i++)
+        {
+            cin >> text[i];
+        }
+        for (int i = 0; i < m; i++)
+        {
+            cin >> pat[i];
+        }
+        cout << "testcase:"<<k+1<<endl;
+        clock_t start=clock();
+        
+        baker_bird_algo(text, pat, n, m);
+        
+        double duration = 1000*(clock()-start)/(double)CLOCKS_PER_SEC;
+        cout << endl;
+
+        str+=to_string(duration)+"\n";
+    }
+
+    int fd = open("timing.txt",O_WRONLY | O_CREAT | O_TRUNC, 0644); 
+    write(fd,str.c_str(),str.length());
+
 }
